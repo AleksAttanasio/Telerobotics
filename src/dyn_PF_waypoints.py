@@ -13,7 +13,7 @@ from std_msgs.msg import Float64MultiArray
 #waypointsTurns=[[-1.4,-4.5,7.5],[1.49,4.8,7.5],[7.4,2.975,7.5],[9.29,9.0,7.5],[7.15,9.68,7.5]]
 #waypointsHeights=[[-4.96,-15.9,6.92],[-2.16,-6.9,6.92],[-1.96,-6.3,7.5],[1.4,4.5,7.5],[1.6,5.15,6.97],[3.84,12.35,6.97],[4.07,13,6.43],[4.63,14.8,6.43],[4.85,15.43,5.9],[6.53,20.83,5.9]]
 #waypointsBasic=[[1.4,4.5,7.5],[-1.4,-4.5,7.5]]
-waypoints=[[-1.4,-4.5,7.5],[1.49,4.8,7.5],[7.4,2.975,7.5],[9.29,9.0,7.5],[7.15,9.68,7.5]]
+waypoints=[[1.4,4.5,7.5],[-1.4,-4.5,7.5]]
 
 #topic to command
 twist_topic="/g500/thrusters_input"
@@ -68,11 +68,11 @@ while not rospy.is_shutdown() and currentwaypoint < len(waypoints):
   yErr = vTp[1]
   zErr = vTp[2]
   x_basicVelocity = gain * xErr
-  y_basicVelocity = gain * yErr
-  z_basicVelocity = gain * zErr
-  msg.data = [-x_basicVelocity, -x_basicVelocity, 0, 0, 0]
-  msg.data = [0, 0, 0, 0, y_basicVelocity]
-  msg.data = [0, 0, -z_basicVelocity, -z_basicVelocity, 0]
+  y_basicVelocity = 1.05 * gain * yErr
+  z_basicVelocity = 1.05 * gain * zErr
+  msg.data = [-x_basicVelocity, -x_basicVelocity, -z_basicVelocity, -z_basicVelocity, y_basicVelocity]
+  #msg.data = [0, 0, 0, 0, y_basicVelocity]
+  #msg.data = [0, 0, -z_basicVelocity, -z_basicVelocity, 0]
 
   #msg.twist.linear.x=0.0
   #msg.twist.linear.y=0.0
