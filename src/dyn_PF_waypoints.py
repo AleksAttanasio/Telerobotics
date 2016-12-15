@@ -6,6 +6,7 @@ import numpy as np
 import tf
 #import service library
 from std_srvs.srv import Empty
+from std_msgs.msg import Float64MultiArray
 
 ### WAYPOINTS
 ## rename to waypoints in order to use them
@@ -15,14 +16,15 @@ from std_srvs.srv import Empty
 waypoints=[[-1.4,-4.5,7.5],[1.49,4.8,7.5],[7.4,2.975,7.5],[9.29,9.0,7.5],[7.15,9.68,7.5]]
 
 #topic to command
-twist_topic="/g500/velocityCommand"
+twist_topic="/g500/thrusters_input"
 #base velocity for the teleoperation (0.5 m/s) / (0.5rad/s)
 baseVelocity=0.5
 gain = 0.3
 threshold = 0.05
+
 ##create the publisher
 rospy.init_node('waypointFollow')
-pub = rospy.Publisher(twist_topic, TwistStamped,queue_size=1)
+pub = rospy.Publisher(twist_topic, Float64MultiArray ,queue_size=1)
 
 ##wait for benchmark init service
 rospy.wait_for_service('/startBench')
@@ -57,15 +59,20 @@ while not rospy.is_shutdown() and currentwaypoint < len(waypoints):
   # vMp = vMw . Wmp = inverse(wMv). Wmp
   vTp = tf.transformations.translation_from_matrix(vMp)
 
-  #print vTp
+  print vTp
 
-  msg = TwistStamped()
+  msg = Float64MultiArray()
+  msg.data = [0, 0, 0, 0, 0]
+
   xErr = vTp[0]
   yErr = vTp[1]
   zErr = vTp[2]
-  msg.twist.linear.x = gain * xErr
-  msg.twist.linear.y = gain * yErr
-  msg.twist.linear.z = gain * zErr
+  x_basicVelocity = gain * xErr
+  y_basicVelocity = gain * yErr
+  z_basicVelocity = gain * zErr
+  msg.data = [-x_basicVelocity, -x_basicVelocity, 0, 0, 0]
+  msg.data = [0, 0, 0, 0, y_basicVelocity]
+  msg.data = [0, 0, -z_basicVelocity, -z_basicVelocity, 0]
 
   #msg.twist.linear.x=0.0
   #msg.twist.linear.y=0.0
