@@ -45,7 +45,7 @@ install(
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
-install(PROGRAMS src/PF_teleop.py src/PF_waypoints.py src/PF_vision.py src/manageSpreadSheet.py src/spreadSheets.py src/cloudResults.py src/replayResults.py
+install(PROGRAMS src/PF_teleop.py src/PF_waypoints.py src/PF_vision.py src/manageSpreadSheet.py src/spreadSheets.py src/cloudResults.py src/replayResults.py src/dyn_PF_teleop.py src/dyn_PF_waypoints.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 install(DIRECTORY launch/

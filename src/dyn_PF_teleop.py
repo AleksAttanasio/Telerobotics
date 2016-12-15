@@ -6,9 +6,9 @@ import rospy
 
 #import service library
 from std_srvs.srv import Empty
-
+from std_msgs.msg import Float64MultiArray
 #topic to command
-twist_topic="/g500/velocityCommand"
+twist_topic="/g500/thrusters_input"
 #base velocity for the teleoperation (0.5 m/s) / (0.5rad/s)
 baseVelocity=0.5
 
@@ -22,7 +22,7 @@ oldflags = fcntl.fcntl(fd, fcntl.F_GETFL)
 fcntl.fcntl(fd, fcntl.F_SETFL, oldflags | os.O_NONBLOCK)
 
 ##create the publisher
-pub = rospy.Publisher(twist_topic, TwistStamped,queue_size=1)
+pub = rospy.Publisher(twist_topic, Float64MultiArray ,queue_size=1)
 rospy.init_node('keyboardCommand')
 
 ##wait for benchmark init service
@@ -33,17 +33,19 @@ start=rospy.ServiceProxy('/startBench', Empty)
 rospy.wait_for_service('/stopBench')
 stop=rospy.ServiceProxy('/stopBench', Empty)
 
-print "==== Teleoperating G500 ==== \nNon-dynamic teleoperator"\
+print "==== Teleoperating G500 ==== \nDynamic teleoperator"\
 "\nKeymap:\n"\
 "u\ti\to\n\t^\n\t|\nj     <- ->\tl\n\t|\n\tV\nm\t,\t.\n\n"\
 "i - j - l - , control linear velocities\nu - o - m - . control angular velocities\n"\
 "e \t increase vertical velocity\n"\
-"d \t decrease vertical velocity\n"
+"d \t decrease vertical velocity\n"\
+"Use w and s for increase and decrease velocity\n"
 
 #The try is necessary for the console input!
 try:
     while not rospy.is_shutdown():
-	msg = TwistStamped()
+	msg = Float64MultiArray()
+	msg.data = [0, 0, 0, 0, 0]
         try:
             c = sys.stdin.read(1)
             ##Depending on the character set the proper speeds
@@ -54,21 +56,31 @@ try:
 		stop()
 		print "Benchmark finished!"
 	    elif c=='i':
-		msg.twist.linear.x=baseVelocity
+		msg.data=[-baseVelocity, -baseVelocity, 0, 0, 0]
 	    elif c==',':
-		msg.twist.linear.x=-baseVelocity
+		msg.data=[baseVelocity, baseVelocity, 0, 0, 0]
 	    elif c=='l':
-		msg.twist.linear.y=baseVelocity
+		msg.data=[0, 0, 0, 0, baseVelocity]
 	    elif c=='j':
-		msg.twist.linear.y=-baseVelocity
-	    elif c=='d':
-		msg.twist.linear.z=baseVelocity
+		msg.data=[0, 0, 0, 0, -baseVelocity]
 	    elif c=='e':
-		msg.twist.linear.z=-baseVelocity
+		msg.data =[0, 0, baseVelocity, baseVelocity, 0]
+	    elif c=='d':
+		msg.data =[0, 0, -baseVelocity, -baseVelocity, 0]
 	    elif c=='o':
-		msg.twist.angular.z=baseVelocity
+		msg.data=[-baseVelocity,baseVelocity, 0, 0, 0]
 	    elif c=='u':
-		msg.twist.angular.z=-baseVelocity
+		msg.data=[baseVelocity,-baseVelocity, 0, 0, 0]
+	    elif c=='m':
+		msg.data=[0,0,baseVelocity,-baseVelocity, 0]	    
+	    elif c=='.':
+		msg.data=[0,0,-baseVelocity,baseVelocity, 0]
+	    elif c=='w':
+		baseVelocity = baseVelocity + baseVelocity * 0.15
+		print baseVelocity
+	    elif c=='s':
+		baseVelocity = baseVelocity - baseVelocity * 0.15
+		print baseVelocity
 	    else:
 		print 'wrong key pressed'
 	    while c!='':

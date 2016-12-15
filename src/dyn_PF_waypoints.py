@@ -75,9 +75,11 @@ while not rospy.is_shutdown() and currentwaypoint < len(waypoints):
 
   if(abs(xErr) < threshold and abs(yErr) < threshold and abs(zErr) < threshold):
 	print "Arrived to waypoint number: {0}/{1}".format(currentwaypoint, len(waypoints) - 1)
-	currentwaypoint = currentwaypoint + 1		
+	currentwaypoint = currentwaypoint + 1
+	if(currentwaypoint+1 == len(waypoints)):
+		print "==== END OF TRACK ===="
+		
   
   rospy.sleep(0.1)
-print "==== END OF TRACK ===="
-stop()
 
+stop()
