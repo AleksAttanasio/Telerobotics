@@ -34,8 +34,16 @@ class imageGrabber:
 
     bin_image = cv2.inRange(cv_image, lower_green, upper_green)
     edges = cv2.Canny(bin_image, 10, 250, apertureSize = 3)
-    cv2.imshow("Image window", edges)
-    # cv2.imshow("Coddio", cv_image)
+    lines = cv2.HoughLinesP(edges, 1, np.pi/180, 50, 60, 20)
+    m = np.array([])
+    if (lines!=None): 
+	for x1, y1, x2, y2 in lines[0]: 
+		cv2.line(cv_image,(x1,y1),(x2,y2),(0,255,0),2)
+		current_m = ((y2 - y1)/(x2 - x1))
+		m = np.append(m, current_m)
+    m_coeff_mean = np.mean(m)
+    print m_coeff_mean
+    cv2.imshow("Image window", cv_image)
     cv2.waitKey(3)
 
   ##Return size of the image
