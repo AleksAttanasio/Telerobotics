@@ -10,6 +10,9 @@ from cv_bridge import CvBridge, CvBridgeError
 #import service library
 from std_srvs.srv import Empty
 
+lower_green = np.array([0,40,0])
+upper_green = np.array([30,220,30])
+
 class imageGrabber:
 
   ##Init function, create subscriber and required vars.
@@ -29,7 +32,10 @@ class imageGrabber:
 
     self.height, self.width, self.channels = cv_image.shape
 
-    cv2.imshow("Image window", cv_image)
+    bin_image = cv2.inRange(cv_image, lower_green, upper_green)
+    edges = cv2.Canny(bin_image, 10, 250, apertureSize = 3)
+    cv2.imshow("Image window", edges)
+    # cv2.imshow("Coddio", cv_image)
     cv2.waitKey(3)
 
   ##Return size of the image
@@ -56,7 +62,7 @@ if __name__ == '__main__':
 
   #Create the imageGrabber
   IG=imageGrabber()
-  
+
   start()
   while not rospy.is_shutdown():
     msg = TwistStamped()
