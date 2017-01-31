@@ -2,6 +2,9 @@
 
 from geometry_msgs.msg import TwistStamped
 from sensor_msgs.msg import Image
+from sympy import *
+from sympy.geometry import *
+from sympy.plotting import plot
 import rospy
 import numpy as np
 import cv2
@@ -31,18 +34,39 @@ class imageGrabber:
       print(e)
 
     self.height, self.width, self.channels = cv_image.shape
-
+    
+    #center = Point(160,120)
+    #r1 = 50
+    #r2 = 100
+    #c1 = Circle(center, r1)
+    #c2 = Circle(center, r2)
+    begin_x = 50
+    end_x = 100
+    lower_y = 60
+    upper_y = 120
+    detect_line1 = Line(Point(begin_x,lower_y),Point(end_x,lower_y))
+    detect_line2 = Line(Point(begin_x,upper_y),Point(end_x,upper_y))
+    #detect_line1 = Circle(Point(160,120),80)
+    #detect_line2 = Circle(Point(160,120),100)
     bin_image = cv2.inRange(cv_image, lower_green, upper_green)
     edges = cv2.Canny(bin_image, 10, 250, apertureSize = 3)
     lines = cv2.HoughLinesP(edges, 1, np.pi/180, 50, 60, 20)
-    m = np.array([])
+    
     if (lines!=None): 
 	for x1, y1, x2, y2 in lines[0]: 
 		cv2.line(cv_image,(x1,y1),(x2,y2),(0,255,0),2)
-		current_m = ((y2 - y1)/(x2 - x1))
-		m = np.append(m, current_m)
-    m_coeff_mean = np.mean(m)
-    print m_coeff_mean
+		segment = Segment(Point(x1,y1), Point(x2,y2))
+		intersect1 = intersection(segment, detect_line1)
+		intersect2 = intersection(segment, detect_line2)
+		if(intersect1 != None):
+			cv2.circle(cv_image,(intersect1[0].x,intersect1[0].y), 1, (0,0,255), -1)
+		if(intersect2 != None):
+			cv2.circle(cv_image,(intersect2[0].x,intersect2[0].y), 1, (0,0,255), -1)
+		#print intersect
+		#print len(intersect)
+
+		#cv2.circle(cv_image,(x1,y1), 1, (0,0,255), -1)
+		#cv2.circle(cv_image,(x2,y2), 1, (0,0,255), -1)
     cv2.imshow("Image window", cv_image)
     cv2.waitKey(3)
 
